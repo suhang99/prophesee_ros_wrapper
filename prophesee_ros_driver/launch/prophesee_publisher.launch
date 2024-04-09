@@ -1,4 +1,6 @@
 <launch>
+  <arg name="raw_input" default="" />
+  <arg name="rosbag_output" default="" />
 
   <node pkg="prophesee_ros_driver" type="prophesee_ros_publisher" name="prophesee_ros_publisher" respawn="false" output="screen">
     <param name="camera_name" value="camera" />
@@ -8,7 +10,11 @@
     <param name="bias_file" value=""/>
 
     <!-- Instead of live camera, you can read data offline from raw file -->
-    <param name="raw_file_to_read" value="" />
+    <param name="raw_file_to_read" value="$(arg raw_input)" />
+
+    <!-- Convert raw file into rosbag -->
+    <param name="output_rosbag_path" value="$(arg rosbag_output)" />
+    <param name="rosbag_event_topic" value="/prophesee/camera/cd_events_buffer" />
 
     <!-- approximate time span in seconds for which events will
 	 be aggregated until a ROS message is generated. Defaults to

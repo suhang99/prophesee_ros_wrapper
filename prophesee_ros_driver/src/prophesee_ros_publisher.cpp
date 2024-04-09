@@ -19,10 +19,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-PropheseeWrapperPublisher::PropheseeWrapperPublisher() :
-    nh_("~"),
-    biases_file_(""),
-    raw_file_to_read_("") {
+PropheseeWrapperPublisher::PropheseeWrapperPublisher() : nh_("~"), biases_file_(""), raw_file_to_read_("") {
     camera_name_ = "PropheseeCamera_optical_frame";
 
     // Load Parameters
@@ -30,6 +27,8 @@ PropheseeWrapperPublisher::PropheseeWrapperPublisher() :
     nh_.getParam("publish_cd", publish_cd_);
     nh_.getParam("bias_file", biases_file_);
     nh_.getParam("raw_file_to_read", raw_file_to_read_);
+    nh_.getParam("output_rosbag_path", output_rosbag_path_);
+    nh_.getParam("rosbag_event_topic", rosbag_event_topic_);
     event_delta_t_ = ros::Duration(nh_.param<double>("event_delta_t", 100.0e-6));
 
     const std::string topic_cam_info        = "/prophesee/" + camera_name_ + "/camera_info";
@@ -50,7 +49,7 @@ PropheseeWrapperPublisher::PropheseeWrapperPublisher() :
 
     // Get the sensor config
     Metavision::CameraConfiguration config = camera_.get_camera_configuration();
-    auto &geometry                        = camera_.geometry();
+    auto &geometry                         = camera_.geometry();
     ROS_INFO("[CONF] Width:%i, Height:%i", geometry.width(), geometry.height());
     ROS_INFO("[CONF] Serial number: %s", config.serial_number.c_str());
 
@@ -62,6 +61,9 @@ PropheseeWrapperPublisher::PropheseeWrapperPublisher() :
 
 PropheseeWrapperPublisher::~PropheseeWrapperPublisher() {
     camera_.stop();
+    if (!output_rosbag_path_.empty()) {
+        rosbag_out_.close();
+    }
 
     nh_.shutdown();
 }
@@ -81,6 +83,11 @@ bool PropheseeWrapperPublisher::openCamera() {
         } else {
             camera_ = Metavision::Camera::from_file(raw_file_to_read_);
             ROS_INFO("[CONF] Reading from raw file: %s", raw_file_to_read_.c_str());
+
+            if (!output_rosbag_path_.empty()) {
+                ROS_INFO("[CONF] Writing to rosbag file: %s", output_rosbag_path_.c_str());
+                rosbag_out_.open(output_rosbag_path_, rosbag::bagmode::Write);
+            }
         }
 
         camera_is_opened = true;
@@ -103,6 +110,12 @@ void PropheseeWrapperPublisher::startPublishing() {
             cam_info_msg_.header.stamp = ros::Time::now();
             pub_info_.publish(cam_info_msg_);
         }
+        if (!camera_.is_running()) {
+            if (!raw_file_to_read_.empty()) {
+                ROS_INFO("[CONF] Finish reading raw file");
+            }
+            break;
+        }
         loop_rate.sleep();
     }
 }
@@ -113,8 +126,10 @@ void PropheseeWrapperPublisher::publishCDEvents() {
         Metavision::CallbackId cd_callback =
             camera_.cd().add_callback([this](const Metavision::EventCD *ev_begin, const Metavision::EventCD *ev_end) {
                 // Check the number of subscribers to the topic
-                if (pub_cd_events_.getNumSubscribers() <= 0)
-                    return;
+                if (output_rosbag_path_.empty()) {
+                    if (pub_cd_events_.getNumSubscribers() <= 0)
+                        return;
+                }
 
                 if (ev_begin < ev_end) {
                     // Compute the current local buffer size with new CD events
@@ -165,13 +180,17 @@ void PropheseeWrapperPublisher::publishCDEvents() {
                     // Publish the message
                     pub_cd_events_.publish(event_buffer_msg);
 
+                    // Write message to rosbag
+                    if (!output_rosbag_path_.empty()) {
+                        rosbag_out_.write(rosbag_event_topic_, event_buffer_msg.header.stamp, event_buffer_msg);
+                    }
+
                     // Clean the buffer for the next iteration
                     event_buffer_.clear();
 
                     ROS_DEBUG("CD data available, buffer size: %d at time: %lui",
                               static_cast<int>(event_buffer_msg.events.size()), event_buffer_msg.header.stamp.toNSec());
                 }
-
             });
     } catch (Metavision::CameraException &e) {
         ROS_WARN("%s", e.what());

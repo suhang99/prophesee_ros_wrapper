@@ -10,6 +10,8 @@
 #include <sensor_msgs/CameraInfo.h>
 
 #include <metavision/sdk/driver/camera.h>
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
 
 /// \brief Main class for ROS publisher
 ///
@@ -54,11 +56,20 @@ private:
     /// \brief Message for publishing the camera info
     sensor_msgs::CameraInfo cam_info_msg_;
 
+    /// \brief Rosbag for output
+    rosbag::Bag rosbag_out_;
+
     /// \brief Path to the file with the camera settings (biases)
     std::string biases_file_;
 
     /// \brief Raw file to read instead of live camera
     std::string raw_file_to_read_;
+
+    /// \brief Output rosbag path
+    std::string output_rosbag_path_;
+
+    /// \brief Rosbag event topic
+    std::string rosbag_event_topic_;
 
     /// \brief Camera name in string format
     std::string camera_name_;
