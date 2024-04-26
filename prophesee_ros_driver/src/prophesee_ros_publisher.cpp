@@ -29,6 +29,8 @@ PropheseeWrapperPublisher::PropheseeWrapperPublisher() : nh_("~"), biases_file_(
     nh_.getParam("raw_file_to_read", raw_file_to_read_);
     nh_.getParam("output_rosbag_path", output_rosbag_path_);
     nh_.getParam("rosbag_event_topic", rosbag_event_topic_);
+    nh_.getParam("use_relative_timestamp", use_relative_timestamp_);
+
     event_delta_t_ = ros::Duration(nh_.param<double>("event_delta_t", 100.0e-6));
 
     const std::string topic_cam_info        = "/prophesee/" + camera_name_ + "/camera_info";
@@ -97,7 +99,12 @@ bool PropheseeWrapperPublisher::openCamera() {
 
 void PropheseeWrapperPublisher::startPublishing() {
     camera_.start();
-    start_timestamp_ = ros::Time::now();
+    if(use_relative_timestamp_){
+        start_timestamp_ = ros::Time(0);
+    }
+    else{
+        start_timestamp_ = ros::Time::now();
+    }
     last_timestamp_  = start_timestamp_;
 
     if (publish_cd_)
