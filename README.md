@@ -154,7 +154,7 @@ The ROS wrapper we propose in this repo is a minimal example to get you started.
 There are multiple ways to enhance it in terms of features and performance.
 The code is open to contributions, thus do not hesitate to [propose pull requests](https://github.com/prophesee-ai/prophesee_ros_wrapper/pulls).
 
-We also recommend you to check the [metavision_ros_driver repo from berndpfrommer](https://github.com/berndpfrommer/metavision_ros_driver)
+We also recommend you to check this [metavision_driver repository](https://github.com/ros-event-camera/metavision_driver)
 that offers a ROS driver for event-based cameras with some speed and features enhancements. 
 
 ## Contact
