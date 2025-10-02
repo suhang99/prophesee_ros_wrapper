@@ -12,6 +12,7 @@ find_package(OpenCV COMPONENTS highgui REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         OpenCV
         roscpp
+        rosbag
         sensor_msgs
         cv_bridge
         image_transport

@@ -1,4 +1,7 @@
 <launch>
+  <arg name="raw_input" default="" />
+  <arg name="rosbag_output" default="" />
+  <arg name="use_relative_timestamp" default="false" />
 
   <node pkg="prophesee_ros_driver" type="prophesee_ros_publisher" name="prophesee_ros_publisher" respawn="false" output="screen">
     <param name="camera_name" value="camera" />
@@ -9,6 +12,13 @@
 
     <!-- Instead of live camera, you can read data offline from raw file -->
     <param name="raw_file_to_read" value="" />
+
+    <!-- Convert raw file into rosbag -->
+    <param name="output_rosbag_path" value="$(arg rosbag_output)" />
+    <param name="rosbag_event_topic" value="/prophesee/camera/cd_events_buffer" />
+
+    <!-- Whether use relative timestamp for events. True: start with 0. False: start with current ROS time -->
+    <param name="use_relative_timestamp" value="$(arg use_relative_timestamp)" />
 
     <!-- approximate time span in seconds for which events will
 	 be aggregated until a ROS message is generated. Defaults to
