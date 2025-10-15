@@ -32,6 +32,7 @@ PropheseeWrapperPublisher::PropheseeWrapperPublisher() :
     nh_.getParam("bias_file", biases_file_);
     nh_.getParam("raw_file_to_read", raw_file_to_read_);
     nh_.getParam("output_rosbag_path", output_rosbag_path_);
+    nh_.getParam("rosbag_event_topic", rosbag_event_topic_);
     nh_.getParam("use_relative_timestamp", use_relative_timestamp_);
     event_delta_t_ = ros::Duration(nh_.param<double>("event_delta_t", 100.0e-6));
 
@@ -39,6 +40,8 @@ PropheseeWrapperPublisher::PropheseeWrapperPublisher() :
     const std::string topic_cd_event_buffer = "/prophesee/" + camera_name_ + "/cd_events_buffer";
 
     pub_info_ = nh_.advertise<sensor_msgs::CameraInfo>(topic_cam_info, 1);
+
+    ROS_INFO("raw file to read: %s", raw_file_to_read_.c_str());
 
     if (publish_cd_)
         pub_cd_events_ = nh_.advertise<prophesee_event_msgs::EventArray>(topic_cd_event_buffer, 500);

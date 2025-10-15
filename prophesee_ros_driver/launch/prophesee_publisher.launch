@@ -11,7 +11,7 @@
     <param name="bias_file" value=""/>
 
     <!-- Instead of live camera, you can read data offline from raw file -->
-    <param name="raw_file_to_read" value="" />
+    <param name="raw_file_to_read" value="$(arg raw_input)" />
 
     <!-- Convert raw file into rosbag -->
     <param name="output_rosbag_path" value="$(arg rosbag_output)" />

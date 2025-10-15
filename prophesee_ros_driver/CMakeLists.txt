@@ -9,6 +9,8 @@ execute_process(COMMAND lsb_release -cs OUTPUT_VARIABLE RELEASE_CODENAME OUTPUT_
 
 find_package(OpenCV COMPONENTS highgui REQUIRED)
 
+find_package(CURL REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
         OpenCV
         roscpp
@@ -53,7 +55,7 @@ target_link_libraries(
     prophesee_ros_publisher
     MetavisionSDK::stream
     ${catkin_LIBRARIES}
-    curl
+    CURL::libcurl
 )
 
 add_dependencies(
@@ -72,12 +74,12 @@ target_link_libraries(
     prophesee_ros_viewer
     MetavisionSDK::stream
     ${catkin_LIBRARIES}
-    curl
+    CURL::libcurl
 )
 
 add_dependencies(
     prophesee_ros_viewer
     prophesee_event_msgs_generate_messages_cpp
     ${catkin_EXPORTED_TARGETS}
-    curl
+    CURL::libcurl
 )
